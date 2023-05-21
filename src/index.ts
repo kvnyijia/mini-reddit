@@ -9,12 +9,11 @@ import cors from 'cors';
 import { json } from 'body-parser';
 // import { typeDefs, resolvers } from './schema';
 import { MyContext } from "./types"
-// import { buildSchema } from "graphql";
 import { __prod__ } from "./constants";
 import microConfig from "./mikro-orm.config"
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
-// import { UserResolver } from "./resolvers/user";
+import { UserResolver } from "./resolvers/user";
 import { buildTypeDefsAndResolvers } from "type-graphql";
 
 const main = async () => {
@@ -31,7 +30,7 @@ const main = async () => {
 
   // Generate the GraphQL schema: Create typeDefs and resolvers map k 
   const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
-    resolvers: [HelloResolver, PostResolver],
+    resolvers: [HelloResolver, PostResolver, UserResolver],
   });
 
   const app = express();

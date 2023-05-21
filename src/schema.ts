@@ -1,4 +1,3 @@
-// import { Post } from "./entities/Post";
 
 // Schema definition
 export const typeDefs = `#graphql
