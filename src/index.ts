@@ -7,7 +7,6 @@ import { expressMiddleware } from '@apollo/server/express4';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
-// import { typeDefs, resolvers } from './schema';
 import { MyContext } from "./types"
 import { __prod__ } from "./constants";
 import microConfig from "./mikro-orm.config"
@@ -22,12 +21,6 @@ const main = async () => {
   await orm.getMigrator().up();
   // await orm.getMigrator().down();
 
-  // const post = orm.em.fork({}).create(Post, {title: "my 3rd post"});
-  // await orm.em.fork({}).persistAndFlush(post);
-
-  // const allposts = await orm.em.fork({}).find(Post, {});
-  // console.log(allposts);
-
   // Generate the GraphQL schema: Create typeDefs and resolvers map k 
   const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
     resolvers: [HelloResolver, PostResolver, UserResolver],
@@ -39,11 +32,6 @@ const main = async () => {
     typeDefs,
     resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  //   schema: await buildSchema({
-  //     resolvers: [HelloResolver, PostResolver],
-  //     validator: false,
-  //   }), 
-  //   context: () => ({ em: orm.em }),
   });
   await apolloServer.start();
   app.use(
@@ -57,15 +45,6 @@ const main = async () => {
   
   await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
   console.log(`\n>>> Server ready at http://localhost:4000/graphql\n`);
-
-  // apolloServer.applyMiddleware({ app });
-  // app.get("/", (req, res) => {
-  //   res.send("hello");
-  // });
-  // app.listen(4000, () => {
-  //   console.log(">>> server started in localhost:4000");
-  // });
-
 };
 
 main().catch((err) => {
