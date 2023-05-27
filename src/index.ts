@@ -32,6 +32,15 @@ const main = async () => {
   });
 
   const app = express();
+  app.use(
+    cors({
+      origin: "http://localhost:3000", 
+      credentials: true,
+    })
+  );
+  // app.set("Access-Control-Allow-Origin", "http://localhost:3000");
+  // app.set("Access-Control-Allow-Credentials", true);
+  // app.set('trust proxy', !__prod__);
 
   // Initialize client.
   const redisClient = createClient();
@@ -73,7 +82,7 @@ const main = async () => {
   await apolloServer.start();
   app.use(
     '/graphql',
-    cors<cors.CorsRequest>(),  // { origin: ["https://studio.apollographql.com"], credentials: true, }
+    cors<cors.CorsRequest>({ origin: ["http://localhost:3000"], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
       context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res }),
