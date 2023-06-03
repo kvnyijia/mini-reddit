@@ -18,11 +18,15 @@ import { buildTypeDefsAndResolvers } from "type-graphql";
 // import RedisStore from "connect-redis";
 import session from "express-session";
 import { createClient } from "redis";
+// import { sendEmail } from "./utils/sendEmail";
+// import { User } from "./entities/User";
 // import connectRedis from 'connect-redis';
 
 const main = async () => {
   console.log('\n>>> ---------------------------------------------\n');
+  // sendEmail("bob@bob.com", "hello this is email content");
   const orm = await MikroORM.init(microConfig);
+  // await orm.em.nativeDelete(User, {});
   await orm.getMigrator().up();
   // await orm.getMigrator().down();
 
@@ -89,6 +93,11 @@ const main = async () => {
     }),
   );
   
+  app.get("/", (req, res) => {
+    // res.send("hello");
+    // res.send(JSON.stringify({message: "hello world"}))
+    res.send(JSON.stringify(["apple", "banana", "canada"]))
+  });
   await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
   console.log(`\n>>> Server ready at http://localhost:4000/graphql\n`);
 };
