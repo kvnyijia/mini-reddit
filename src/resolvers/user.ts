@@ -2,8 +2,9 @@ import { User } from "../entities/User";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
-import { emitWarning } from "process";
 import { sendEmail } from "../utils/sendEmail";
+import {v4} from "uuid";
+import { FORGET_PASSWORD_PREFIX } from "../constants";
 
 @InputType()
 class UsernamePasswordInput {
@@ -37,17 +38,27 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  // @Mutation(() => UserResponse) 
+  // async changePassword(
+  //   @Arg('token') token: string,
+  //   @Arg('newPassword') newPassword: string,
+  //   @Ctx() {em, redis}: MyContext
+  // ): Promise<UserResponse> {
+  // }
+
   @Mutation(() => Boolean) 
-  async forgotPassword(
+  async forgetPassword(
     @Arg('email') email: string,
-    @Ctx() {em, req}: MyContext
+    @Ctx() {em, redis}: MyContext
   ): Promise<Boolean> {
     const user = await em.findOne(User, {email});
     if (!user) {
       return true;
     }
 
-    const token = "woefoqweqrfqw";
+    const token = v4();
+    await redis.set(FORGET_PASSWORD_PREFIX + token, user.id, 'EX', 1000*60*60*24*3);
+
     await sendEmail(
       email, 
       `<a href="http://localhost:3000/change-password/${token}">reset password</a>`

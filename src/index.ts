@@ -17,7 +17,8 @@ import { buildTypeDefsAndResolvers } from "type-graphql";
 
 // import RedisStore from "connect-redis";
 import session from "express-session";
-import { createClient } from "redis";
+// import { createClient } from "redis";
+import Redis from "ioredis";
 // import { sendEmail } from "./utils/sendEmail";
 // import { User } from "./entities/User";
 // import connectRedis from 'connect-redis';
@@ -47,15 +48,17 @@ const main = async () => {
   // app.set('trust proxy', !__prod__);
 
   // Initialize client.
-  const redisClient = createClient();
+  // const redisClient = createClient();
   // redisClient.on('error', err => console.log('Redis Client Error', err));
   // await redisClient.connect();
-  redisClient.connect().catch(console.error);
+  // redisClient.connect().catch(console.error);
+  const redis = new Redis();
+
   // Initialize store.
   // const RedisStore = connectRedis(session);
   const RedisStore = require("connect-redis").default;
   const redisStore = new RedisStore({
-    client: redisClient,
+    client: redis,
     // prefix: "myapp:",
     disableTouch: true,
   });
@@ -89,7 +92,7 @@ const main = async () => {
     cors<cors.CorsRequest>({ origin: ["http://localhost:3000"], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
-      context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res }),
+      context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res, redis }),
     }),
   );
   
