@@ -1,22 +1,12 @@
 import { User } from "../entities/User";
 import { MyContext } from "src/types";
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from "argon2";
 import { sendEmail } from "../utils/sendEmail";
 import {v4} from "uuid";
 import { FORGET_PASSWORD_PREFIX } from "../constants";
-
-@InputType()
-class UsernamePasswordInput {
-  @Field()
-  email: string; 
-
-  @Field()
-  username: string; 
-
-  @Field()
-  password: string; 
-}
+import { UsernamePasswordInput } from "./UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
 
 @ObjectType()
 class FieldError {
@@ -83,48 +73,9 @@ export class UserResolver {
     @Arg('options', () => UsernamePasswordInput) options: UsernamePasswordInput,
     @Ctx() {em, req}: MyContext
   ): Promise<UserResponse> {
-    if (!options.email.includes("@")) {
-      return {
-        errors: [
-          {
-            field: "email",
-            message: "invalid email",
-          },
-        ],
-      };
-    }
-
-    if (options.username.includes("@")) {
-      return {
-        errors: [
-          {
-            field: "username",
-            message: "cannot include an @",
-          },
-        ],
-      };
-    }
-
-    if (options.username.length <= 2) {
-      return {
-        errors: [
-          {
-            field: "username",
-            message: "length must be greater than 2",
-          },
-        ],
-      };
-    }
-
-    if (options.password.length <= 2) {
-      return {
-        errors: [
-          {
-            field: "password",
-            message: "length must be greater than 2",
-          },
-        ],
-      };
+    const errors = validateRegister(options);
+    if (errors) {
+      return {errors};
     }
 
     const hashedPassword = await argon2.hash(options.password);
