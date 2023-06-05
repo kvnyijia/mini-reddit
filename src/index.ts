@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { MikroORM } from "@mikro-orm/core";
+import { DataSource } from "typeorm";
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import express from "express";
@@ -9,7 +9,6 @@ import cors from 'cors';
 import { json } from 'body-parser';
 import { MyContext } from "./types"
 import { __prod__ } from "./constants";
-import microConfig from "./mikro-orm.config"
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
@@ -17,14 +16,32 @@ import { buildTypeDefsAndResolvers } from "type-graphql";
 import session from "express-session";
 import Redis from "ioredis";
 const RedisStore = require("connect-redis").default;   // import RedisStore from "connect-redis";
+import {Post} from "./entities/Post"
+import {User} from "./entities/User"
+
+export const AppDataSource = new DataSource({
+  type: "postgres",
+  host: "localhost",
+  port: 5432,
+  username: "root",
+  password: "110604",
+  database: "postgres",
+  logging: true,
+  synchronize: true,
+  entities: [Post, User],
+});
 
 const main = async () => {
   console.log('\n>>> ---------------------------------------------\n');
 
   // DB migration
-  const orm = await MikroORM.init(microConfig);
-  await orm.getMigrator().up();
-  // await orm.getMigrator().down();
+  AppDataSource.initialize()
+    .then(() => {
+        console.log("Data Source has been initialized!")
+    })
+    .catch((err) => {
+        console.error("Error during Data Source initialization", err)
+    });
 
   // Generate the GraphQL schema: Create a `typeDefs` and `resolvers`(map) pair
   const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
@@ -76,7 +93,7 @@ const main = async () => {
     cors<cors.CorsRequest>({ origin: ["http://localhost:3000"], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
-      context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res, redis }),
+      context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis }),
     }),
   );
   
