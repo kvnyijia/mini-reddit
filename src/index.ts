@@ -96,7 +96,7 @@ const main = async () => {
     }),
   );
   
-  app.get("/", (req, res) => {
+  app.get("/", (_, res) => {
     // res.send("hello");
     // res.send(JSON.stringify({message: "hello world"}))
     res.send(JSON.stringify(["apple", "banana", "canada"]))
