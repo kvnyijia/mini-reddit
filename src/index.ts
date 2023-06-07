@@ -18,6 +18,7 @@ import Redis from "ioredis";
 const RedisStore = require("connect-redis").default;   // import RedisStore from "connect-redis";
 import {Post} from "./entities/Post"
 import {User} from "./entities/User"
+import path from "path";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -29,6 +30,7 @@ export const AppDataSource = new DataSource({
   logging: true,
   synchronize: true,
   entities: [Post, User],
+  migrations: [path.join(__dirname, "./migrations/*")],
 });
 
 const main = async () => {
@@ -36,11 +38,14 @@ const main = async () => {
 
   // DB migration
   AppDataSource.initialize()
-    .then(() => {
-        console.log("Data Source has been initialized!")
+    .then(async () => {
+      console.log(">>> Data Source has been initialized!")
+
+      await AppDataSource.runMigrations();
+      console.log(">>> DB Migration is up!")
     })
     .catch((err) => {
-        console.error("Error during Data Source initialization", err)
+      console.error("Error during Data Source initialization", err)
     });
 
   // Generate the GraphQL schema: Create a `typeDefs` and `resolvers`(map) pair
