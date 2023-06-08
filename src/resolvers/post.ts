@@ -3,7 +3,7 @@ import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Q
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { AppDataSource } from "../";
-// import { Updoot } from "../entities/Updoot";
+import { Updoot } from "../entities/Updoot";
 
 @InputType() 
 class PostInput {
@@ -39,24 +39,35 @@ export class PostResolver {
     @Arg('value', () => Int) value: number,
     @Ctx() {req}: MyContext
   ) {
-    const isUpdoot = value !== -1;
+    const isUpdoot = value > 0;
     const realValue = isUpdoot ? 1 : -1;
     const {userId} = req.session;
-    // await Updoot.insert({
-    //   userId,
-    //   postId,
-    //   value: realValue,
-    // });
 
-    AppDataSource.query(`
-      START TRANSACTION; 
-      insert into updoot ("userId", "postId", value) 
-      values (${userId}, ${postId}, ${realValue});
-      update post 
-      set points = points + ${realValue}
-      where id = ${postId};
-      COMMIT;
-    `);
+    // Create a new query runner
+    const queryRunner = AppDataSource.createQueryRunner();
+    // Establish real database connection using our new query runner
+    await queryRunner.connect();
+    // Open a new transaction
+    await queryRunner.startTransaction();
+    try {
+      // Execute some operations on this transaction:
+      await queryRunner.manager.insert(Updoot, {
+        userId,
+        postId,
+        value: realValue, 
+      });
+      await queryRunner.manager.increment(Post, {id: postId}, "points", realValue);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+    } catch (err) {
+      // Since we have errors let's rollback changes we made
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      // console.log(">>> Error happens, TX has been rollbacked.");
+      return false;
+    }
     return true;
   }
 
