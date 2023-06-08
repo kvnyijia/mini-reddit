@@ -18,6 +18,7 @@ import Redis from "ioredis";
 const RedisStore = require("connect-redis").default;   // import RedisStore from "connect-redis";
 import {Post} from "./entities/Post"
 import {User} from "./entities/User"
+import { Updoot } from "./entities/Updoot";
 import path from "path";
 
 export const AppDataSource = new DataSource({
@@ -29,7 +30,7 @@ export const AppDataSource = new DataSource({
   database: "postgres",
   logging: true,
   synchronize: true,
-  entities: [Post, User],
+  entities: [Post, User, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
 });
 

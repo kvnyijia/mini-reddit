@@ -3,6 +3,7 @@ import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Q
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { AppDataSource } from "../";
+// import { Updoot } from "../entities/Updoot";
 
 @InputType() 
 class PostInput {
@@ -31,6 +32,34 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote (
+    @Arg('postId', () => Int) postId: number,
+    @Arg('value', () => Int) value: number,
+    @Ctx() {req}: MyContext
+  ) {
+    const isUpdoot = value !== -1;
+    const realValue = isUpdoot ? 1 : -1;
+    const {userId} = req.session;
+    // await Updoot.insert({
+    //   userId,
+    //   postId,
+    //   value: realValue,
+    // });
+
+    AppDataSource.query(`
+      START TRANSACTION; 
+      insert into updoot ("userId", "postId", value) 
+      values (${userId}, ${postId}, ${realValue});
+      update post 
+      set points = points + ${realValue}
+      where id = ${postId};
+      COMMIT;
+    `);
+    return true;
+  }
+
   @Query(() => PaginatedPosts) 
   async posts(
     @Arg('limit', () => Int) limit: number, 
@@ -54,7 +83,7 @@ export class PostResolver {
           'updatedAt', u."updatedAt"
         ) creator
       from post p join "user" u on u."id" = p."creatorId" 
-      where ${cursor ? `p."createdAt" < $2` : ""}
+      ${cursor ? `where p."createdAt" < $2` : ""}
       order by p."createdAt" DESC
       limit $1
       `, replacements
