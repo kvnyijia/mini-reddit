@@ -42,31 +42,54 @@ export class PostResolver {
     const isUpdoot = value > 0;
     const realValue = isUpdoot ? 1 : -1;
     const {userId} = req.session;
+    const updoot = await Updoot.findOneBy({postId, userId});
 
-    // Create a new query runner
-    const queryRunner = AppDataSource.createQueryRunner();
-    // Establish real database connection using our new query runner
-    await queryRunner.connect();
-    // Open a new transaction
-    await queryRunner.startTransaction();
-    try {
-      // Execute some operations on this transaction:
-      await queryRunner.manager.insert(Updoot, {
-        userId,
-        postId,
-        value: realValue, 
-      });
-      await queryRunner.manager.increment(Post, {id: postId}, "points", realValue);
+    if (updoot && updoot.value !== realValue) {
+      // Create a new query runner
+      const queryRunner = AppDataSource.createQueryRunner();
+      // Establish real database connection using our new query runner
+      await queryRunner.connect();
+      // Open a new transaction
+      await queryRunner.startTransaction();
+      try {
+        // Execute some operations on this transaction:
+        await queryRunner.manager.update(Updoot, { userId, postId }, { value: realValue });
+        await queryRunner.manager.increment(Post, {id: postId}, "points", 2*realValue);
 
-      // Commit transaction
-      await queryRunner.commitTransaction();
-      await queryRunner.release();
-    } catch (err) {
-      // Since we have errors let's rollback changes we made
-      await queryRunner.rollbackTransaction();
-      await queryRunner.release();
-      // console.log(">>> Error happens, TX has been rollbacked.");
-      return false;
+        // Commit transaction
+        await queryRunner.commitTransaction();
+        await queryRunner.release();
+      } catch (err) {
+        // Since we have errors let's rollback changes we made
+        await queryRunner.rollbackTransaction();
+        await queryRunner.release();
+        // console.log(">>> Error happens, TX has been rollbacked.");
+      }
+    } else if (!updoot) {
+      // Create a new query runner
+      const queryRunner = AppDataSource.createQueryRunner();
+      // Establish real database connection using our new query runner
+      await queryRunner.connect();
+      // Open a new transaction
+      await queryRunner.startTransaction();
+      try {
+        // Execute some operations on this transaction:
+        await queryRunner.manager.insert(Updoot, {
+          userId,
+          postId,
+          value: realValue, 
+        });
+        await queryRunner.manager.increment(Post, {id: postId}, "points", realValue);
+
+        // Commit transaction
+        await queryRunner.commitTransaction();
+        await queryRunner.release();
+      } catch (err) {
+        // Since we have errors let's rollback changes we made
+        await queryRunner.rollbackTransaction();
+        await queryRunner.release();
+        // console.log(">>> Error happens, TX has been rollbacked.");
+      }
     }
     return true;
   }
