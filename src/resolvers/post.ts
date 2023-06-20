@@ -103,9 +103,14 @@ export class PostResolver {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
 
-    let replacements: any[] = [realLimitPlusOne, req.session.userId];
+    let replacements: any[] = [realLimitPlusOne];
+    if (req.session.userId) {
+      replacements.push(req.session.userId);
+    }
+    let cursorIdx = 3;
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
+      cursorIdx = replacements.length;
     }
     const posts = await AppDataSource.query(`
       select 
@@ -123,27 +128,11 @@ export class PostResolver {
         : 'null as "voteStatus"'
       }
       from post p join "user" u on u."id" = p."creatorId" 
-      ${cursor ? `where p."createdAt" < $3` : ""}
+      ${cursor ? `where p."createdAt" < $${cursorIdx}` : ""}
       order by p."createdAt" DESC
       limit $1
       `, replacements
     );
-    // console.log(posts);
-
-    // const qb = AppDataSource
-    //   .getRepository(Post)
-    //   .createQueryBuilder("p")
-    //   .innerJoinAndSelect(
-    //     "p.creator",
-    //     "u",
-    //     'u.id = p."creatorId"',
-    //   )
-    //   .orderBy('p."createdAt"', 'DESC')
-    //   .take(realLimitPlusOne);
-    // if (cursor) {
-    //   qb.where('p."createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
-    // }
-    // const posts = await qb.getMany();
     return {posts: posts.slice(0, realLimit), hasMore: posts.length === realLimitPlusOne};
   }
 
