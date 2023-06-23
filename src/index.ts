@@ -20,6 +20,7 @@ import {Post} from "./entities/Post"
 import {User} from "./entities/User"
 import { Updoot } from "./entities/Updoot";
 import path from "path";
+import { createUserLoader } from "./utils/createUserLoader";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -102,7 +103,7 @@ const main = async () => {
     cors<cors.CorsRequest>({ origin: ["http://localhost:3000"], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
-      context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis }),
+      context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis, userLoader: createUserLoader(), }),
     }),
   );
   
