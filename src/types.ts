@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Redis } from "ioredis";
 import { Session } from "express-session";
 import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 // import { ParamsDictionary } from 'express-serve-static-core';
 
 declare interface ISession extends Session {
@@ -13,4 +14,5 @@ export type MyContext = {
   res: Response;
   redis: Redis;
   userLoader: ReturnType<typeof createUserLoader>;
+  updootLoader: ReturnType<typeof createUpdootLoader>;
 };
