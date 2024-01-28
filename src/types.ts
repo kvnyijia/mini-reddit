@@ -16,3 +16,15 @@ export type MyContext = {
   userLoader: ReturnType<typeof createUserLoader>;
   updootLoader: ReturnType<typeof createUpdootLoader>;
 };
+
+// Define Types for process.env
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      DB_PORT: number;
+      DB_USERNAZME: string;
+      DB_PASSWORD: string;
+      PORT: number;
+    }
+  }
+}

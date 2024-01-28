@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { DataSource } from "typeorm";
 import { ApolloServer } from "@apollo/server";
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import express from "express";
@@ -16,25 +15,9 @@ import { buildTypeDefsAndResolvers } from "type-graphql";
 import session from "express-session";
 import Redis from "ioredis";
 const RedisStore = require("connect-redis").default;   // import RedisStore from "connect-redis";
-import {Post} from "./entities/Post"
-import {User} from "./entities/User"
-import { Updoot } from "./entities/Updoot";
-import path from "path";
 import { createUserLoader } from "./utils/createUserLoader";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
-
-export const AppDataSource = new DataSource({
-  type: "postgres",
-  host: "localhost",
-  port: 5432,
-  username: "root",
-  password: "110604",
-  database: "postgres",
-  logging: true,
-  synchronize: true,
-  entities: [Post, User, Updoot],
-  migrations: [path.join(__dirname, "./migrations/*")],
-});
+import AppDataSource from "./config/AppDataSource";
 
 const main = async () => {
   console.log('\n>>> ---------------------------------------------\n');
@@ -111,8 +94,9 @@ const main = async () => {
   // app.get("/", (_, res) => {
   //   res.send(JSON.stringify({message: "hello world"}))
   // });
-  await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
-  console.log(`\n>>> Server ready at http://localhost:4000/graphql\n`);
+  const port = process.env.PORT;
+  await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
+  console.log(`\n>>> Server ready at http://localhost:${port}/graphql\n`);
 };
 
 main().catch((err) => {
