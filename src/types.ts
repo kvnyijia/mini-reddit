@@ -21,6 +21,7 @@ export type MyContext = {
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      DB_HOST: string;
       DB_PORT: number;
       DB_USERNAZME: string;
       DB_PASSWORD: string;

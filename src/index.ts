@@ -41,7 +41,20 @@ async function main() {
     disableTouch: true,
   });
 
+  // Generate the GraphQL schema (using TypeGraphQL): Create a `typeDefs` and `resolvers`(map) pair
+  const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
+    resolvers: [HelloResolver, PostResolver, UserResolver],
+  });
+
   const app = express();
+  const httpServer = http.createServer(app);
+  const apolloServer = new ApolloServer<MyContext>({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
+  await apolloServer.start();
+
   app.use(
     cors({
       origin: Env.CLIENT_ORIGIN, 
@@ -64,18 +77,6 @@ async function main() {
       },
     })
   );
-
-  // Generate the GraphQL schema (using TypeGraphQL): Create a `typeDefs` and `resolvers`(map) pair
-  const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
-    resolvers: [HelloResolver, PostResolver, UserResolver],
-  });
-  const httpServer = http.createServer(app);
-  const apolloServer = new ApolloServer<MyContext>({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  });
-  await apolloServer.start();
   app.use(
     '/graphql',
     cors<cors.CorsRequest>({ origin: [Env.CLIENT_ORIGIN], credentials: true, }),
@@ -86,9 +87,12 @@ async function main() {
   );
   
   await new Promise<void>((resolve) => httpServer.listen({ port: Env.PORT }, resolve));
-  console.log(`\n>>> Server ready at http://localhost:${Env.PORT}/graphql\n`);
 };
 
-main().catch((err) => {
-  console.error(err);
-});
+main()
+  .then(() => {
+    console.log(`\n>>> Server ready at http://localhost:${Env.PORT}/graphql\n`);
+  })
+  .catch((err) => {
+    console.error(err);
+  });
