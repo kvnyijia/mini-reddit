@@ -14,22 +14,19 @@ import { UserResolver } from "./resolvers/user";
 import { buildTypeDefsAndResolvers } from "type-graphql";
 import session from "express-session";
 import Redis from "ioredis";
-const RedisStore = require("connect-redis").default;   // import RedisStore from "connect-redis";
+import RedisStore from "connect-redis"
 import { createUserLoader } from "./utils/createUserLoader";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
 import AppDataSource from "./config/AppDataSource";
+import { REDIS_SECRET, PORT, CLIENT_ORIGIN } from "./config/Env";
 
-const main = async () => {
-  console.log('\n>>> ---------------------------------------------\n');
+async function main() {
 
   // DB migration
   AppDataSource.initialize()
     .then(async () => {
-      console.log(">>> Data Source has been initialized!")
-
       await AppDataSource.runMigrations();
       console.log(">>> DB Migration is up!")
-
       // await Post.delete({});
       // console.log(">>> posts deleted");
     })
@@ -45,7 +42,7 @@ const main = async () => {
   const app = express();
   app.use(
     cors({
-      origin: "http://localhost:3000", 
+      origin: CLIENT_ORIGIN, 
       credentials: true,
     })
   );
@@ -65,7 +62,7 @@ const main = async () => {
       store: redisStore,
       resave: false,                               // required: force lightweight session keep alive (touch)
       saveUninitialized: false,                    // recommended: only save session when data exists
-      secret: "keyboard cat",
+      secret: REDIS_SECRET,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         httpOnly: true,
@@ -84,7 +81,7 @@ const main = async () => {
   await apolloServer.start();
   app.use(
     '/graphql',
-    cors<cors.CorsRequest>({ origin: ["http://localhost:3000"], credentials: true, }),
+    cors<cors.CorsRequest>({ origin: [CLIENT_ORIGIN], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
       context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis, userLoader: createUserLoader(), updootLoader: createUpdootLoader(), }),
@@ -94,9 +91,8 @@ const main = async () => {
   // app.get("/", (_, res) => {
   //   res.send(JSON.stringify({message: "hello world"}))
   // });
-  const port = process.env.PORT;
-  await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
-  console.log(`\n>>> Server ready at http://localhost:${port}/graphql\n`);
+  await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve));
+  console.log(`\n>>> Server ready at http://localhost:${PORT}/graphql\n`);
 };
 
 main().catch((err) => {

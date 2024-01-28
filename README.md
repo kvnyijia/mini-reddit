@@ -14,6 +14,12 @@ DB_PORT=your_db_port
 DB_USERNAME=your_db_username
 DB_PASSWORD=your_db_password
 
+# Redis
+REDIS_SECRET=your_redis_secret
+
+# Web client
+CLIENT_ORIGIN=http://localhost:3000
+
 # Application Port - server listens on this port
 PORT=your_port
 ```

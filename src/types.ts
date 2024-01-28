@@ -24,6 +24,8 @@ declare global {
       DB_PORT: number;
       DB_USERNAZME: string;
       DB_PASSWORD: string;
+      REDIS_SECRET: string;
+      CLIENT_ORIGIN: string;
       PORT: number;
     }
   }
