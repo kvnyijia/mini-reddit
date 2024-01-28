@@ -1,8 +1,5 @@
 import path from "path";
-import { Post } from "../entities/Post";
-import { Updoot } from "../entities";
-import { User } from "../entities";
-// import { User, Post, Updoot } from "../entities";
+import { User, Post, Updoot } from "../entities";
 import { DataSource } from "typeorm";
 import dotenv from 'dotenv';                    // Needed by process.env
 dotenv.config();                                // Needed by process.env

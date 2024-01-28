@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Column, BaseEntity, OneToMany } from "typeorm";
 import { Field, ObjectType } from "type-graphql";
-import { Post } from "./Post";
-import { Updoot } from "./Updoot";
+import { Post, Updoot } from "./";
 
 @ObjectType()
 @Entity()
