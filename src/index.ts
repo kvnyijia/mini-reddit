@@ -34,9 +34,12 @@ async function main() {
       console.error("Error during Data Source initialization", err)
     });
 
-  // Generate the GraphQL schema: Create a `typeDefs` and `resolvers`(map) pair
-  const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
-    resolvers: [HelloResolver, PostResolver, UserResolver],
+  // Create redis (redis client)(using ioredis) & redisStore (using connect-redis)
+  const redis = new Redis();
+  const redisStore = new RedisStore({
+    client: redis,
+    // prefix: "myapp:",
+    disableTouch: true,
   });
 
   const app = express();
@@ -46,15 +49,6 @@ async function main() {
       credentials: true,
     })
   );
-
-  // Create redis (redis client) & redisStore
-  const redis = new Redis();
-  const redisStore = new RedisStore({
-    client: redis,
-    // prefix: "myapp:",
-    disableTouch: true,
-  });
-
   // Initialize redis sesssion storage
   app.use(
     session({
@@ -72,6 +66,10 @@ async function main() {
     })
   );
 
+  // Generate the GraphQL schema (using TypeGraphQL): Create a `typeDefs` and `resolvers`(map) pair
+  const { typeDefs, resolvers } = await buildTypeDefsAndResolvers({
+    resolvers: [HelloResolver, PostResolver, UserResolver],
+  });
   const httpServer = http.createServer(app);
   const apolloServer = new ApolloServer<MyContext>({
     typeDefs,
@@ -88,9 +86,6 @@ async function main() {
     }),
   );
   
-  // app.get("/", (_, res) => {
-  //   res.send(JSON.stringify({message: "hello world"}))
-  // });
   await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve));
   console.log(`\n>>> Server ready at http://localhost:${PORT}/graphql\n`);
 };
