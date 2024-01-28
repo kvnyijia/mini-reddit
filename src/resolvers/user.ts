@@ -1,4 +1,3 @@
-import { User } from "../entities/User";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Field, FieldResolver, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import argon2 from "argon2";
@@ -8,6 +7,7 @@ import { FORGET_PASSWORD_PREFIX } from "../constants";
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
 import { AppDataSource } from "../config";
+import { User } from "../entities";
 
 @ObjectType()
 class FieldError {
