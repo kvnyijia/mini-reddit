@@ -17,8 +17,7 @@ import Redis from "ioredis";
 import RedisStore from "connect-redis"
 import { createUserLoader } from "./utils/createUserLoader";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
-import AppDataSource from "./config/AppDataSource";
-import { REDIS_SECRET, PORT, CLIENT_ORIGIN } from "./config/Env";
+import { AppDataSource, Env } from "./config";
 
 async function main() {
 
@@ -45,7 +44,7 @@ async function main() {
   const app = express();
   app.use(
     cors({
-      origin: CLIENT_ORIGIN, 
+      origin: Env.CLIENT_ORIGIN, 
       credentials: true,
     })
   );
@@ -56,7 +55,7 @@ async function main() {
       store: redisStore,
       resave: false,                               // required: force lightweight session keep alive (touch)
       saveUninitialized: false,                    // recommended: only save session when data exists
-      secret: REDIS_SECRET,
+      secret: Env.REDIS_SECRET,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
         httpOnly: true,
@@ -79,15 +78,15 @@ async function main() {
   await apolloServer.start();
   app.use(
     '/graphql',
-    cors<cors.CorsRequest>({ origin: [CLIENT_ORIGIN], credentials: true, }),
+    cors<cors.CorsRequest>({ origin: [Env.CLIENT_ORIGIN], credentials: true, }),
     json(),
     expressMiddleware(apolloServer, {
       context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis, userLoader: createUserLoader(), updootLoader: createUpdootLoader(), }),
     }),
   );
   
-  await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve));
-  console.log(`\n>>> Server ready at http://localhost:${PORT}/graphql\n`);
+  await new Promise<void>((resolve) => httpServer.listen({ port: Env.PORT }, resolve));
+  console.log(`\n>>> Server ready at http://localhost:${Env.PORT}/graphql\n`);
 };
 
 main().catch((err) => {

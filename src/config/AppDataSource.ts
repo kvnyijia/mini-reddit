@@ -10,7 +10,7 @@ const DB_PORT = process.env.DB_PORT;
 const DB_USERNAME = process.env.DB_USERNAME;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 
-const AppDataSource = new DataSource({
+export const AppDataSource = new DataSource({
   type: "postgres",
   host: "localhost",
   port: DB_PORT,
@@ -22,5 +22,3 @@ const AppDataSource = new DataSource({
   entities: [Post, User, Updoot],
   migrations: [path.join(__dirname, "./migrations/*")],
 });
-
-export default AppDataSource;

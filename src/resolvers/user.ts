@@ -7,7 +7,7 @@ import {v4} from "uuid";
 import { FORGET_PASSWORD_PREFIX } from "../constants";
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
-import AppDataSource from "../config/AppDataSource";
+import { AppDataSource } from "../config";
 
 @ObjectType()
 class FieldError {

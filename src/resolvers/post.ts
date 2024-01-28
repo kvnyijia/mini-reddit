@@ -2,7 +2,7 @@ import { Post } from "../entities/Post";
 import { Arg, Ctx, Field, FieldResolver, InputType, Int, Mutation, ObjectType, Query, Resolver, Root, UseMiddleware } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import AppDataSource from "../config/AppDataSource";
+import { AppDataSource } from "../config";
 import { Updoot } from "../entities/Updoot";
 import { User } from "../entities/User";
 
